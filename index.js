@@ -51,6 +51,14 @@ function Operacao(){
 
 }
 
+// FUNÇÃO PARA SAIR 
+
+function Sair(){
+
+    process.exit()
+
+}
+
 // FUNÇÃO PARA CRIAR A CONTA
 
 function CriarConta(){
@@ -97,7 +105,7 @@ function Depositar(){
 
         const conta = resposta['conta']
 
-        if(fs.existsSync(VerificarConta(conta))){
+        if(!VerificarConta(conta)){
             return Depositar()
         }
 
@@ -177,7 +185,7 @@ function ConsultarSaldo(){
         const conta = resposta['conta'];
 
         if(!VerificarConta(conta)){
-            console.log(chalk.bgRed(`ops, não encontramos sua conta, tente novamente`));
+            // console.log(chalk.bgRed(`ops, não encontramos sua conta, tente novamente`));
             return ConsultarSaldo();
         }
 
@@ -189,5 +197,68 @@ function ConsultarSaldo(){
         Operacao()
 
     }).catch(err => console.log(err));
+
+}
+
+// FUNÇÃO PARA SACAR VALOR 
+
+function Sacar(){
+
+    inquirer.prompt([
+        {
+            name: 'conta',
+            message: 'Qual o nome da sua conta?'
+        }
+    ]).then((resposta) => {
+
+        const conta = resposta['conta']
+
+        if(!VerificarConta(conta)){
+           return Sacar()
+        }
+
+        inquirer.prompt([
+            {
+                name: 'valor',
+                message: 'Quanto deseja sacar?'
+            }
+        ]).then((resposta) => {
+
+            const valor = resposta['valor']
+
+            SubValor(conta, valor)
+
+        }).catch(err => console.log(err))
+
+
+    }).catch(err => console.log(err))
+
+}
+
+function SubValor(NomeConta, valor){
+
+    const contaData = PegarConta(NomeConta)
+
+    if(!valor){
+        console.log(`algo de errado, tente novamente`);
+        return Sacar();
+    }
+
+    if(contaData.balance < valor){
+        console.log(chalk.bgRed.white('você não possui esse valor em sua conta'))
+        return Sacar()
+    }
+
+    contaData.balance = parseFloat(contaData.balance) - parseFloat(valor);
+
+    fs.writeFileSync(`contas/${NomeConta}.json`,
+    JSON.stringify(contaData),
+    function(err){
+        console.log(err)
+    })
+
+    console.log(`Você sacou ${valor} da sua conta`)
+
+    Operacao();
 
 }
