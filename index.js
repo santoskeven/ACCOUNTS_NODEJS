@@ -17,6 +17,7 @@ function Operacao(){
                 'Criar conta',
                 'Consultar saldo',
                 'Depositar',
+                'Transferir',
                 'Sacar',
                 'Sair'
             ]
@@ -32,6 +33,10 @@ function Operacao(){
 
             case 'Depositar':
                 Depositar()
+                break;
+
+                case 'Transferir':
+                Transferir()
                 break;
 
             case 'Consultar saldo':
@@ -171,6 +176,58 @@ function PegarConta(NomeConta){
 
 }
 
+
+//FUNÇÃO PARA TRANSFERIR DINHEIRO 
+
+function Transferir(){
+
+    inquirer.prompt([
+
+        {
+            name: 'conta',
+            message: 'Qual o nome da sua conta?'
+        }
+
+    ]).then((resposta) => {
+
+        const conta = resposta['conta']
+        
+        if(!VerificarConta(conta)){
+            return Transferir()
+        }
+
+        inquirer.prompt([
+            {
+                name: 'valor',
+                message: 'quanto deseja transferir?'
+            }
+        ]).then((resposta) => {
+
+           const valor = resposta['valor']
+
+           inquirer.prompt([
+            {
+                name: 'conta',
+                message: 'Para quem deseja transferir?'
+            }
+           ]).then((resposta) => {
+
+                const Tconta = resposta['conta'];
+
+                if(!VerificarConta(Tconta)){
+                    return Transferir()
+                }
+
+                TransferirConta(conta, valor, Tconta)
+
+           }).catch(err =>  console.log(err))
+
+        }).catch(err => console.log(err))
+
+    }).catch(err => console.log(err))
+
+}
+
 // FUNÇÃO PARA CUNSULTAR SALDO DA CONTA
 
 function ConsultarSaldo(){
@@ -260,5 +317,41 @@ function SubValor(NomeConta, valor){
     console.log(`Você sacou ${valor} da sua conta`)
 
     Operacao();
+
+}
+
+function TransferirConta(NomeConta, valor, ResConta){
+    
+    const contaData = PegarConta(NomeConta)
+
+    const contaDataAdd = PegarConta(ResConta)
+
+    if(!valor){
+        console.log(`algo de errado, tente novamente`);
+        return Transferir();
+    }
+
+    if(contaData.balance < valor){
+        console.log(chalk.bgRed.white('você não possui esse valor em sua conta'))
+        return Transferir()
+    }
+
+    contaData.balance = parseFloat(contaData.balance) - parseFloat(valor);
+
+    fs.writeFileSync(`contas/${NomeConta}.json`,
+    JSON.stringify(contaData),
+    function(err){console.log(err)}
+    )
+
+    contaDataAdd.balance = parseFloat(contaDataAdd.balance) + parseFloat(valor)
+
+    fs.writeFileSync(`contas/${ResConta}.json`,
+    JSON.stringify(contaDataAdd),
+    function(err){console.log(err)}
+    )
+
+    console.log(`Você transferiru ${valor} para ${ResConta}`)
+
+    Operacao()
 
 }
