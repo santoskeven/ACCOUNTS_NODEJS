@@ -16,9 +16,8 @@ function Operacao(){
             choices: [
                 'Criar conta',
                 'Consultar saldo',
-                'Transferir',
-
                 'Depositar',
+                'Transferir',
                 'Sacar',
                 'Sair'
             ]
@@ -83,8 +82,6 @@ function Sair(){
         }
 
     }).catch(err => console.log(err))
-
-    process.exit()
 
 }
 
@@ -283,7 +280,6 @@ function TransferirConta(NomeConta, valor, ResConta){
     Operacao()
 
 }
-
 
 // FUNÇÃO PARA CUNSULTAR SALDO DA CONTA
 
